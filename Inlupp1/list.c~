@@ -1,0 +1,297 @@
+
+
+
+
+
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "list.h"
+
+
+/// Change this definition and replace int with the appropriate type
+/// in your program.
+
+struct shelf
+ {
+   // char* hylla; //"a12"
+  int amount;
+
+};
+
+struct ware
+{
+  char *name;
+  char *desc;
+  int price;
+  shelf_t shelf;
+};
+
+struct link
+{
+  L value;
+  link_t *next;
+};
+
+struct list
+{
+   link_t *first;
+   link_t *last;
+};
+
+
+/// Creates a new list
+///
+/// \returns: empty list
+
+list_t *list_new()
+
+{
+  list_t *l = calloc(1, sizeof(link_t));
+  l ->first = NULL; //calloc gör detta redan?
+  l ->last = l->first;
+  return l;
+} 
+
+/// Inserts a new element at the end of the list
+///
+/// \param list pointer to the list
+/// \param elem the element to be appended
+// L är shelf_t och därför är elem shelf_t.
+void list_append(list_t *list, L elem)
+{
+  link_t *new_elem = calloc(1, sizeof(link_t)); //skapar en lista?
+  new_elem-> value = elem ;      //shelf-delen ersätts av elem variabeln?
+  new_elem->next = NULL;
+  if ( list -> first == NULL) //om listan är tom
+    {
+     list->first = new_elem;
+     list->last = list->first;
+     
+    }
+  else
+    {
+      list->last->next= new_elem;
+      list->last = new_elem;
+    }
+}
+
+
+
+
+/// Inserts a new element at the beginning of the list
+///
+/// \param list pointer to the list
+/// \param elem the element to be prepended
+void list_prepend(list_t *list, L elem)
+
+{
+  link_t *new_elem = calloc(1, sizeof(link_t)); //skapar en lista?
+  new_elem-> value = elem ;      //shelf-delen ersätts av elem variabeln?
+  new_elem->next = list->last;
+  if ( list -> first == NULL)
+    {
+     list->first = new_elem;
+     list->last = list->first;
+    }
+  else
+    {
+      new_elem -> next = list-> first;
+      list->first = new_elem;
+    }
+}
+
+
+/// Inserts a new element at a given index. 
+///
+/// Valid indexes are [0..size]. 
+///
+/// Example:
+///
+/// list_t *l = list_new(); // l == []
+/// list_insert(l, 0, e1);  // l == [e1]
+/// list_insert(l, 0, e2);  // l == [e2, e1]
+/// list_insert(l, 1, e3);  // l == [e2, e3, e1]
+/// list_insert(l, 5, e4);  // l == [e2, e3, e1]
+///
+/// The last case fails (and returns false) because
+/// size is 3, meaning 5 is not a valid index. 
+///
+/// Note that insert at index 0 is the same as prepend 
+/// and insert index size is the same as append. 
+///
+/// Negative indexes should be supported:
+///
+/// list_insert(l, -1, e4);       // l == [e2, e3, e1, e4]
+///
+/// A positive index can be calculated from a 
+/// negative like this: pos_i = size + 1 + neg_i.
+/// 
+/// \param list  pointer to the list
+/// \param index the index for elem to be inserted at
+/// \param elem  the element to be prepended
+/// \returns true if succeeded, else false
+bool list_insert(list_t *list, int index, L elem)
+{
+  link_t *new_elem = calloc(1, sizeof(link_t)); 
+  new_elem-> value = elem ;
+  link_t *current = list->first;
+  int c = list_length(list);
+  if(index == 0 && list->first == NULL)
+    {
+      new_elem->next = list->first;
+      list->first= new_elem;
+      list->last = list->first;
+      
+    }
+  else if (index == 0)
+    {
+      new_elem->next = list->first;
+      list->first= new_elem;
+      return true;
+    }
+  else if (index+1 == c)
+    {
+      list_append(list, elem);
+      return true;
+    }
+  else if (index+1 > c)
+    {
+      return false;
+    }
+  if(index>=1)
+    {
+      for(int i=1; i < index; i++)
+        {
+          if(current->next == NULL)
+            {
+              return false;
+            } 
+          current = current->next;
+          
+        } 
+  
+      new_elem->next = current->next;
+      current->next = new_elem;
+      return true;
+  
+    }
+  
+  return true;
+}
+
+
+/// Removes an element from a list.
+///
+/// Example: (assume l == [e2, e3, e1, e4])
+///
+/// int elem;
+/// list_remove(l, 1, &elem);  // l = [e2, e1, e4], elem == e3
+/// list_remove(l, -1, &elem); // l = [e2, e1], elem == e4
+///
+/// \param list  pointer to the list
+/// \param index the index to be removed
+/// \param elem a pointer to where the element can be stored
+/// \returns true if succeeded, else 
+bool list_remove(list_t *list, int index, L *elem)
+{
+  link_t *current = list->first;
+  link_t *tmp_node = NULL;
+  if (index == 0 && current == NULL)
+    {
+      return false; 
+    }
+  else if (index == 0)
+    {
+      tmp_node= list->first->next;  //varför funkar inte med current?
+      free(list->first);
+      list->first = tmp_node;
+      return true;
+       
+    }
+  else if (index +1 == list_length(list))
+    {
+      for(int i = 0; i < index-1; i++)
+    {
+      if (current->next == NULL)
+        {
+          return false;
+          } 
+      current = current->next;
+    }
+  tmp_node = current->next;
+  current->next = tmp_node->next;
+  free(tmp_node);
+  list->last = current;
+  return true;
+    
+    }
+    
+  
+  for(int i = 0; i < index-1; i++)
+    {
+      if (current->next == NULL)
+        {
+          return false;
+          } 
+      current = current->next;
+    }
+  tmp_node = current->next;
+  current->next = tmp_node->next;
+  free(tmp_node);
+  
+  return true;
+  
+  
+  }
+
+/// Returns the element at a given index
+/// \param list  pointer to the list
+/// \param index the index to be returns
+/// \returns a pointer to the element at index index
+L *list_get(list_t *list, int index);
+
+/// A convenience for list_get(list, 0)
+L *list_first(list_t *list);
+
+/// A convenience for list_get(list, -1)
+L *list_last(list_t *list);
+
+/// Returns the length of the list. It is undefined
+/// whether the length is calculated in O(n) time or
+/// whether there is a size counter in the list object
+/// that is manipulated by insert, remove, etc. 
+/// \param list the list
+/// \returns the length of list
+int list_length(list_t *list)
+{
+link_t *current = list->first;
+ int count = 0; 
+ while(current != NULL)
+   {
+     current = current->next;
+     count++;
+   }
+     
+ return count;
+}
+
+
+int main (void)
+{
+  
+  list_t *list1 = list_new();
+  //list_append( list1, 2);
+  //list_append( list1, 3);
+  list_append(list1,4);
+  int elem;
+  list_remove(list1,0, &elem);
+  list_append(list1,10);
+  list_append(list1,11);
+  printf("%d \n",list_length(list1));
+  printf("%d-%d-%d \n", list1->first->value, list1->first->next->value, list1->last->value);
+  
+  return 0;
+}
+
+
